@@ -1,0 +1,70 @@
+import pyttsx3
+import speech_recognition as sr
+import pyautogui
+import os
+import webbrowser
+
+# Initialize text-to-speech engine
+engine = pyttsx3.init()
+engine.setProperty("rate", 150)  # Speed of speech
+
+def speak(text):
+    engine.say(text)
+    engine.runAndWait()
+
+def listen():
+    recognizer = sr.Recognizer()
+    with sr.Microphone() as source:
+        speak("Listening...")
+        print("Listening...")
+        try:
+            audio = recognizer.listen(source, timeout=5, phrase_time_limit=5)
+            command = recognizer.recognize_google(audio)
+            return command.lower()
+        except sr.UnknownValueError:
+            speak("Sorry sir, I didn't catch that.")
+        except sr.RequestError:
+            speak("There seems to be an issue with the speech service.")
+        except Exception as e:
+            speak("An error occurred.")
+    return ""
+
+def open_app(app_name):
+    if "chrome" in app_name:
+        os.system("open -a 'Google Chrome'")
+    elif "slack" in app_name:
+        os.system("open -a 'Slack'")
+    elif "vscode" in app_name:
+        os.system("open -a 'Visual Studio Code'")
+    else:
+        speak("I can't find that app.")
+
+def perform_qa_task(task):
+    if "screenshot" in task:
+        screenshot = pyautogui.screenshot()
+        screenshot.save("screenshot.png")
+        speak("Screenshot taken and saved.")
+    elif "open browserstack" in task:
+        webbrowser.open("https://www.browserstack.com/")
+        speak("Opening BrowserStack.")
+    else:
+        speak("I need more details for QA tasks.")
+
+def main():
+    speak("Hello! I am ABHI, your assistant. How can I help you today?")
+    while True:
+        command = listen()
+        if "open" in command:
+            app_name = command.replace("open", "").strip()
+            open_app(app_name)
+        elif "qa task" in command:
+            task = command.replace("qa task", "").strip()
+            perform_qa_task(task)
+        elif "stop" in command or "exit" in command:
+            speak("Goodbye!")
+            break
+        else:
+            speak("I didn't understand. Please try again.")
+
+if __name__ == "__main__":
+    main()
